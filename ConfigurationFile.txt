@@ -1,0 +1,57 @@
+# Defines which nodes are used in the system and how to connect to them.
+# This element should only be referenced during the constructor's initial
+# setup.
+# All names must be unique.
+# No other nodes are known.
+# These names will be used for src and dest addresses for the Message
+# The local node’s name is included in this list
+configuration :
+- name : Alice
+  ip   : 192.168.0.12
+  port : 12344
+- name : Bob
+  ip   : 192.168.0.12
+  port : 14255
+- name : Charlie
+  ip   : 10.0.0.24
+  port : 12998
+- name : Dephnie
+  ip   : 10.0.0.24
+  port : 19872
+# This is the incoming port on which MP will listen
+# May be changed for further communication as usual
+sendRules :
+  - action : delay # Ack message number 4 from bob to alice will not be sent
+    src    : Charlie
+    dest   : Dephnie
+    kind   : ACK
+    seqNum : 33
+  - action : drop # Every Lookup message in the system will be delayed
+    src    : Bob
+    dest   : Alice
+    kind   : DROP
+    seqNum : 1
+receiveRules :
+  - action : delay     # 3rd message from Charlie that anyone
+    src    : Charlie        # receives will be duplicated
+    dest   : Dephnie
+    kind   : ACK
+    seqNum : 12
+  - action : drop      # 3rd message from Charlie that anyone
+    src    : Charlie        # receives will be duplicated
+    dest   : Alice
+    kind   : ACK
+    seqNum : 1
+logger :
+ -  ip   : 10.0.0.24
+    port : 14242
+groups : # A single, top-level section in the YAML file
+- name : Group1 # Group names must be unique
+  members : # Any number of members in the group
+  - Alice
+  - Bob
+- name : Group2 # As many groups as you’d like
+  members :
+  - Dephnie
+  - Bob
+  - Charlie

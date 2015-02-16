@@ -1,0 +1,6 @@
+vector clock of sending port :  The destination : Dephnie  The source : Charlie  The sequence number : 0  The content is : 1  The timeStamp is : { 0 0 1 0 } 
+------------------------------------------------------------------------------------------------
+The 1th event :vector clock of receiving port :  The destination : Dephnie  The source : Charlie  The sequence number : 0  The content is : 1  The timeStamp is : { 0 0 1 1 }
+the sequence matrix is given below : 
+*	+1	
+-1	*	

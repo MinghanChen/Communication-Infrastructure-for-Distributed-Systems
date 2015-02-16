@@ -1,0 +1,5 @@
+#Ignore /bin
+bin
+
+#Ignore metadata of files on Mac
+.DS_Store
