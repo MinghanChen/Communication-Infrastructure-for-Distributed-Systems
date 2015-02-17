@@ -5,6 +5,8 @@ import java.io.Serializable;
 import messagepasser.TimeStampedMessage;
 
 public class GroupStampedMessage extends TimeStampedMessage implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 	int[] grouparray;
 	int size;
 	Group thegroup;
@@ -29,6 +31,7 @@ public class GroupStampedMessage extends TimeStampedMessage implements Serializa
 	
 	public Group get() {
 		return thegroup;
+
 	}
 	
 	public String arraytoString() {
@@ -38,6 +41,7 @@ public class GroupStampedMessage extends TimeStampedMessage implements Serializa
 		}
 		sb.append("}");
 		return sb.toString();
+
 	}
 	
 	public String getgroupname() {

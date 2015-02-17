@@ -48,7 +48,9 @@ public  class SrcMonitor implements Runnable {
 					if(content.getMulti())
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
 					else{
-						deliverqueue.offer((GroupStampedMessage)content);
+						synchronized(deliverqueue){
+							deliverqueue.offer((GroupStampedMessage)content);
+						}
 					}
 				} catch (ClassNotFoundException e) {
 					System.out.println("Cannot transfer to Message type");

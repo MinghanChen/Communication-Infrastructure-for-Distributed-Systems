@@ -38,6 +38,7 @@ public class COMulticast {
 		this.mp = mp;
 		inclu_groups = new ArrayList<String>();
 		deliverqueue = mp.getDeliver();
+		clocks = new HashMap<String, ClockService>();
 		YamlParser yamlparser = new YamlParser();
 		try {
 			yamlparser.yamiParser(configuration_filename);
@@ -97,6 +98,7 @@ public class COMulticast {
 					timessage.getData(), timessage.get_isSendtoLogger(),
 					thegroup.getGroupSize(), thegroup);
 			gmessage.setTimeStamp(clock.getTimeStamp());
+			gmessage.set_source(timessage.getSource());
 			try {
 				rmulticast.multicastMsg(gmessage, thegroup);
 			} catch (NumberFormatException e) {
@@ -217,4 +219,5 @@ class CompareGroupMess implements Comparator<GroupStampedMessage> {
 			return 0;
 		}
 	}
+
 }
