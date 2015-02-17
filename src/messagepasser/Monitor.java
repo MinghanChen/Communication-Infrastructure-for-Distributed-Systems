@@ -17,6 +17,7 @@ public class Monitor implements Runnable {
 	Queue<GroupStampedMessage> deliverqueue;
 	//BufferedWriter bw;
 	Hashtable<String, String> recRuleTable;
+	public Hashtable<String, ObjectOutputStream> outputstreamTable;
 	Queue<TimeStampedMessage> recdelay;
 	
 	public Monitor(Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay, Hashtable<String,
@@ -27,7 +28,7 @@ public class Monitor implements Runnable {
 		this.recRuleTable = recRuleTable;
 		this.recdelay = recdelay;
 		this.deliverqueue = deliverqueue;
-		//bw = mp.bw;
+		this.outputstreamTable = outputstreamTable;
 		try {
 			receive = new 
 		            ObjectInputStream(socket.getInputStream());

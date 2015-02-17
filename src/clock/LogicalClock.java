@@ -25,4 +25,8 @@ public class LogicalClock implements ClockService{
 		timeStamp = timeStamp - 1;
 		
 	}
+	
+	public int getPosition() {
+		return 0;
+	}
 }

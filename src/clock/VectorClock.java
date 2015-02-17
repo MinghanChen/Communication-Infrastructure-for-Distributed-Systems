@@ -21,6 +21,10 @@ public class VectorClock implements ClockService{
 		
 	}
 	
+	public int getPosition() {
+		return position;
+	}
+	
 	public int[] getTimeStamp(){
 		return this.timeStamp;
 	}

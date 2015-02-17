@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import messagepasser.Message;
 import messagepasser.MessagePasser;
 import messagepasser.TimeStampedMessage;
+import multicast.COMulticast;
+import multicast.Group;
 import multicast.RMulticast;
 
 public class Demo {
@@ -20,10 +22,10 @@ public class Demo {
 		String isLogical = args[2];
 		boolean[] isFableError = new boolean[1];
 		MessagePasser mp = null;
-		RMulticast rm = null;
+		COMulticast cm = null;
 		try {
 			mp = new MessagePasser(configFilePath, localName, isFableError,Integer.parseInt(isLogical));
-			rm = new RMulticast(mp, configFilePath);
+			cm = new COMulticast(mp, configFilePath);
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -53,7 +55,7 @@ public class Demo {
 					}
 				}
 				else if(readFromCmdFirst.trim().equals("2")){
-					multicastMessage(br, args[0], rm);
+					COMessage(br, args[0], cm);
 				}
 				else{
 					continue;
@@ -108,17 +110,17 @@ public class Demo {
 		}
 	}
 	
-	private static void multicastMessage(BufferedReader br, String localname, RMulticast rm) throws IOException {
+	private static void COMessage(BufferedReader br, String localname, COMulticast cm) throws IOException {
 		System.out.println(">Group name you want to multicast:");
 		String groupname = br.readLine();
-		rm.setGroupName(groupname);
 		System.out.println(">Message kind:");
 		String kind = br.readLine();
 		System.out.println(">Message content:");
 		String content = br.readLine();
 		TimeStampedMessage tmsg = new TimeStampedMessage("", kind, content, false);
+		cm.setGroup(groupname);
 		tmsg.set_source(localname);
-		rm.MulticastMsg(tmsg);
+		cm.coMulticast(tmsg);
 	}
 	
 }
