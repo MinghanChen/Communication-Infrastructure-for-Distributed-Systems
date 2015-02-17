@@ -7,16 +7,16 @@
 # The local node’s name is included in this list
 configuration :
 - name : Alice
-  ip   : 192.168.0.12
+  ip   : 10.0.17.135
   port : 12344
 - name : Bob
-  ip   : 192.168.0.12
+  ip   : 10.0.17.135
   port : 14255
 - name : Charlie
-  ip   : 10.0.0.24
+  ip   : 10.0.22.210
   port : 12998
 - name : Dephnie
-  ip   : 10.0.0.24
+  ip   : 10.0.22.210
   port : 19872
 # This is the incoming port on which MP will listen
 # May be changed for further communication as usual
@@ -48,8 +48,8 @@ logger :
 groups : # A single, top-level section in the YAML file
 - name : Group1 # Group names must be unique
   members : # Any number of members in the group
-  - Alice
   - Bob
+  - Alice
 - name : Group2 # As many groups as you’d like
   members :
   - Dephnie

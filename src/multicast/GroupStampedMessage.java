@@ -5,16 +5,18 @@ import java.io.Serializable;
 import messagepasser.TimeStampedMessage;
 
 public class GroupStampedMessage extends TimeStampedMessage implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 	int[] grouparray;
 	int size;
-	String groupname;
+	Group thegroup;
 	
 	public GroupStampedMessage(String dest, String kind, Object data, boolean isSendtoLogger,
-								int size, String groupname) {
+								int size, Group thegroup) {
 		super(dest, kind, data, isSendtoLogger);
 		grouparray = new int[size];
 		this.size = size;
-		this.groupname = groupname; 
+		this.thegroup = thegroup; 
 	}
 	
 	public void setTimeStamp(int[] timestamp) {
@@ -27,8 +29,8 @@ public class GroupStampedMessage extends TimeStampedMessage implements Serializa
 		return grouparray;
 	}
 	
-	public String get() {
-		return groupname;
+	public Group get() {
+		return thegroup;
 	}
 	
 	public String getgroupname() {

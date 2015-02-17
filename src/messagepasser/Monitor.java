@@ -23,7 +23,6 @@ public class Monitor implements Runnable {
 				  ObjectOutputStream> outputstreamTable, ObjectOutputStream sendout) {
 		this.socket = socket;
 		this.receivequeue = receivequeue;
-		System.out.println("A new Monitor");
 		this.recRuleTable = recRuleTable;
 		this.recdelay = recdelay;
 		this.deliverqueue = deliverqueue;
@@ -50,7 +49,9 @@ public class Monitor implements Runnable {
 					if(!content.getMulti())
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
 					else{
-						deliverqueue.offer((GroupStampedMessage)content);
+						synchronized(deliverqueue){
+							deliverqueue.offer((GroupStampedMessage)content);
+						}
 					}
 				} catch (ClassNotFoundException e) {
 					System.out.println("Cannot transfer to Message type");

@@ -24,8 +24,4 @@ public class VectorClock implements ClockService{
 	public int[] getTimeStamp(){
 		return this.timeStamp;
 	}
-	public void decrease() {
-		timeStamp[position]--;
-		
-	}
 }

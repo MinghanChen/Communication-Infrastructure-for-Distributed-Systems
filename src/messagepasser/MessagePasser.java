@@ -108,49 +108,9 @@ public class MessagePasser {
 		return this.deliverqueue;
 	}
 	
-	public void decrease(){
-		this.seqNumber--;
-		this.clock.decrease();
-	}
-	
-	public void forward(TimeStampedMessage tmsg) throws IOException{
-		YamlParser yamlparser = new YamlParser();
-		try {
-			yamlparser.yamiParser(configuration_filename);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		sendRuleTable = yamlparser.getSendRuleTable();
-		String destination = tmsg.getDest();
-		String key = "";
-		
-		if (outputstreamTable.containsKey(destination)) {
-			ObjectOutputStream sendout = outputstreamTable.get(destination);
-			boolean isDelay = this.checkRules(sendRuleTable,sendout, tmsg, key);
-			//sendout in checkRules();
-			while(!senddelay.isEmpty() && !isDelay){
-				TimeStampedMessage delayMes = senddelay.poll();
-				sendout.writeObject(delayMes);
-			}
-		} else {
-			String[] info = portTableInfo.get(destination).split("\t");
-			Socket socket = new Socket(InetAddress.getByName(info[0]), Integer.parseInt(info[1])); // change for test.
-			ObjectOutputStream sendout = new
-		            ObjectOutputStream(socket.getOutputStream());
-			//System.out.println(key);
-			boolean isDelay = this.checkRules(sendRuleTable,sendout, tmsg, key);
-			while(!senddelay.isEmpty() && !isDelay){
-				TimeStampedMessage delayMes = senddelay.poll();
-				sendout.writeObject(delayMes);
-			}
-			new Thread(new SrcMonitor(receivequeue, deliverqueue, socket, recRuleTable, recdelay)).start();
-			System.out.println("a new srcmonitor");
-			outputstreamTable.put(destination, sendout);
-			
-		}
-		if (tmsg.get_isSendtoLogger()) {
-			this.sendToLogger(tmsg);
-		}
+	public void increase(){
+		this.seqNumber++;
+		this.clock.increase();
 	}
 	
 	public void send(Message messageOld) throws NumberFormatException, UnknownHostException, IOException {
@@ -300,10 +260,8 @@ public class MessagePasser {
 	public void sendMul(GroupStampedMessage message) throws NumberFormatException, UnknownHostException, IOException {
 		YamlParser yamlparser = new YamlParser();
 		
-		clock.increase();
 		message.setTimeStamp(clock.getTimeStamp());
 		message.setMulti();
-		seqNumber++;
 		
 		String destination = message.getDest();
 		String key = name + destination + message.getKind() + message.getNum();
@@ -327,7 +285,6 @@ public class MessagePasser {
 				sendout.writeObject(delayMes);
 			}
 			new Thread(new SrcMonitor(receivequeue, deliverqueue, socket, recRuleTable, recdelay)).start();
-			System.out.println("a new srcmonitor");
 			outputstreamTable.put(destination, sendout);
 			
 		}

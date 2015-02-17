@@ -16,94 +16,91 @@ import messagepasser.TimeStampedMessage;
 
 public class RMulticast {
 	String groupName = "";
-	List<Group> groups = new ArrayList<Group>();
-	MessagePasser mp = new MessagePasser();
+	List<Group> groups;
+	MessagePasser mp;
 	Queue<GroupStampedMessage> deliverqueue;
-	HashMap<String, ArrayList<GroupStampedMessage>> hashmap = new HashMap<String, ArrayList<GroupStampedMessage>>();
-	ClockService clock = null;
-	
-	public RMulticast(MessagePasser mp, String configuration_filename){
+	HashMap<String, ArrayList<GroupStampedMessage>> hashmap;
+	//ClockService clock = null;
+
+	public RMulticast(MessagePasser mp, List<Group> groups, HashMap<String, ArrayList<GroupStampedMessage>> hashmap) {
 		this.mp = mp;
 		this.deliverqueue = mp.getDeliver();
-		YamlParser yamlparser = new YamlParser();
-		try {
-			yamlparser.yamiParser(configuration_filename);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		this.groups = yamlparser.getGroups();
-		//System.out.println();
-		for (int i = 0; i < groups.size(); i++) {
-			//System.out.println("The name is " + this.groupName);
-			if (groups.get(i).find(mp.getName()) != -1) {
-				hashmap.put(groups.get(i).groupName, new ArrayList<GroupStampedMessage>());
-			}
-		}
-		new Thread(new MultiRecMonitor(this)).start();
+		this.groups = groups;
 		
+		this.hashmap = hashmap;
+		// System.out.println();
+		
+		new Thread(new MultiRecMonitor(this)).start();
+
 	}
-	
-	public void setGroupName(String groupname){
+
+	public void setGroupName(String groupname) {
 		this.groupName = groupname;
 
 	}
 	
-	public void MulticastMsg(TimeStampedMessage tmsg) throws NumberFormatException, UnknownHostException, IOException{
-		
-		for(Group group: this.groups){
-			if(group.getGroupName().equals(this.groupName)){
-				int i = group.find(mp.getName());
-				clock = new VectorClock(group.getGroupSize(), i);
-				List<String> members = group.getNames();
-				//tmsg.setMulti();
-				GroupStampedMessage groupstampmess = new GroupStampedMessage(tmsg.getDest(),
-						tmsg.getKind(), tmsg.getData(), tmsg.get_isSendtoLogger(),
-						group.getGroupSize(), this.groupName);
-				clock.increase();
-				groupstampmess.setTimeStamp(clock.getTimeStamp());
-				
-				if(groupstampmess.getSource().equals(this.mp.getName())){
-					for(String dest: members){
-						groupstampmess.set_dest(dest);
-						this.mp.sendMul(groupstampmess);
-						if(members.indexOf(dest)==members.size()-1)
-							break;
-						this.mp.decrease();
-					}
-				}
-				else{
-					for(String dest: members){
-						groupstampmess.set_dest(dest);
-						this.mp.sendMul(groupstampmess);
-					}					
-				}
+	public Queue<GroupStampedMessage> getdeliver(){
+		return this.deliverqueue;
+	}
+
+	public void multicastMsg(GroupStampedMessage groupstampmess, Group thegroup)
+			throws NumberFormatException, UnknownHostException, IOException {
+
+		List<String> members = thegroup.getNames();
+		if (groupstampmess.getSource().equals(this.mp.getName())) {
+			this.mp.increase();
+			for (String dest : members) {
+				groupstampmess.set_dest(dest);
+				this.mp.sendMul(groupstampmess);
+				if (members.indexOf(dest) == members.size() - 1)
+					break;
+			}
+		} else {
+			for (String dest : members) {
+				groupstampmess.set_dest(dest);
+				this.mp.sendMul(groupstampmess);
 			}
 		}
 	}
-	
-	public void MulticastRec() throws NumberFormatException, UnknownHostException, IOException{
+
+	public void MulticastRec() throws NumberFormatException,
+			UnknownHostException, IOException {
 		GroupStampedMessage tmsg = null;
-		
-		while (true) {
-			synchronized(deliverqueue) {
+
+			while (true) {
+			synchronized (deliverqueue) {
 				tmsg = this.deliverqueue.poll();
 			}
-			
+
 			if (tmsg == null) {
 				continue;
 			}
-			String group = tmsg.get();
-//			GroupStampedMessage timsg;
-			for(GroupStampedMessage timsg : hashmap.get(group)){
-				if(timsg.getSource().equals(tmsg.getSource())
-						&& timsg.getgroupname().equals(tmsg.getgroupname()) && group.equals(timsg.getgroupname())){
-					return;
+			Group thegroup = tmsg.get();
+			String groupname = thegroup.groupName;
+			// GroupStampedMessage timsg;
+			for (GroupStampedMessage gmsg : hashmap.get(groupname)) {
+				if (gmsg.getSource().equals(tmsg.getSource())
+						&& groupname.equals(gmsg.get().groupName)) {
+					int[] garray1 = gmsg.getTimeStamp();
+					int[] garray2 = tmsg.getTimeStamp();
+					boolean flag = true;
+					if(garray1.length == garray2.length)
+						for(int i = 0 ; i < garray1.length; i++){
+							if(garray1[i] != garray2[i]){
+								flag = false;
+								break;
+							}
+						}
+					if(flag)
+						return;
 				}
 			}
-			hashmap.get(group).add(tmsg);
+			hashmap.get(groupname).add(tmsg);
 			System.out.println(tmsg.getData());
-			this.MulticastMsg(tmsg);
+			if(tmsg.getSource().equals(this.mp.getName()))
+				return;
+			this.multicastMsg(tmsg, thegroup);
 		}
-				
+
 	}
 }

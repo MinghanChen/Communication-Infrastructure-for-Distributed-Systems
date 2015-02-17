@@ -1,9 +1,10 @@
 package multicast;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Group {
+public class Group implements Serializable{
 	String groupName = "";
 	List<String> names = new ArrayList<String>();
 	
