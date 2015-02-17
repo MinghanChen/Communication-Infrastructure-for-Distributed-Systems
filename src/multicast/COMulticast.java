@@ -91,11 +91,6 @@ public class COMulticast {
 		}
 	}
 	
-	public void receive() {
-		synchronized (deliverqueue) {
-			
-		}
-	}
 	
 	
 	

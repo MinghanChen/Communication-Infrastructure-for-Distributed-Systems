@@ -66,18 +66,19 @@ public class RMulticast {
 	public void MulticastRec() throws NumberFormatException,
 			UnknownHostException, IOException {
 		GroupStampedMessage tmsg = null;
-
 			while (true) {
 			synchronized (deliverqueue) {
-				tmsg = this.deliverqueue.poll();
+					tmsg = this.deliverqueue.poll();
 			}
 
 			if (tmsg == null) {
 				continue;
 			}
+
 			Group thegroup = tmsg.get();
 			String groupname = thegroup.groupName;
 			// GroupStampedMessage timsg;
+			boolean hasMsg = false;
 			for (GroupStampedMessage gmsg : hashmap.get(groupname)) {
 				if (gmsg.getSource().equals(tmsg.getSource())
 						&& groupname.equals(gmsg.get().groupName)) {
@@ -91,14 +92,18 @@ public class RMulticast {
 								break;
 							}
 						}
-					if(flag)
-						return;
+					if(flag){
+						hasMsg = true;
+						break;
+					}
 				}
 			}
+			if(hasMsg)
+				continue;
 			hashmap.get(groupname).add(tmsg);
 			System.out.println(tmsg.getData());
 			if(tmsg.getSource().equals(this.mp.getName()))
-				return;
+				continue;
 			this.multicastMsg(tmsg, thegroup);
 		}
 

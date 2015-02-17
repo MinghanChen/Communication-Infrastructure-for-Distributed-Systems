@@ -17,6 +17,7 @@ public class Monitor implements Runnable {
 	Queue<GroupStampedMessage> deliverqueue;
 	//BufferedWriter bw;
 	Hashtable<String, String> recRuleTable;
+	Hashtable<String, ObjectOutputStream> outputstreamTable;
 	Queue<TimeStampedMessage> recdelay;
 	
 	public Monitor(Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay, Hashtable<String,
@@ -24,6 +25,7 @@ public class Monitor implements Runnable {
 		this.socket = socket;
 		this.receivequeue = receivequeue;
 		this.recRuleTable = recRuleTable;
+		this.outputstreamTable = outputstreamTable;
 		this.recdelay = recdelay;
 		this.deliverqueue = deliverqueue;
 		//bw = mp.bw;
@@ -49,9 +51,9 @@ public class Monitor implements Runnable {
 					if(!content.getMulti())
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
 					else{
-						synchronized(deliverqueue){
+						//synchronized(deliverqueue){
 							deliverqueue.offer((GroupStampedMessage)content);
-						}
+						//}
 					}
 				} catch (ClassNotFoundException e) {
 					System.out.println("Cannot transfer to Message type");
