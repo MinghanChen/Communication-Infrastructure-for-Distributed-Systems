@@ -15,6 +15,10 @@ public class LogicalClock implements ClockService{
 		timeStamp = newTime[0] > timeStamp ? newTime[0] + 1 : timeStamp + 1;
 	}
 	
+	public void setBit(int index, int value) {
+		timeStamp = value;
+	}
+	
 	public int[] getTimeStamp(){
 		int[] result = new int[1];
 		result[0] = this.timeStamp;

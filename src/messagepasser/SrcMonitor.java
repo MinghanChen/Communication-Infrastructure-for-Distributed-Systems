@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Queue;
+import java.util.Stack;
 
 import multicast.GroupStampedMessage;
 import yamlparser.YamlParser;
@@ -50,6 +51,7 @@ public  class SrcMonitor implements Runnable {
 					else{
 						synchronized(deliverqueue){
 							deliverqueue.offer((GroupStampedMessage)content);
+				
 						}
 					}
 				} catch (ClassNotFoundException e) {

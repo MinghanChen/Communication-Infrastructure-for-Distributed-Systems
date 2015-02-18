@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Stack;
 
 import yamlparser.YamlParser;
 import messagepasser.MessagePasser;
@@ -28,15 +29,17 @@ public class COMulticast {
 	private MessagePasser mp;
 	private String groupname;
 	private Group thegroup;
+	private boolean isRead = false;
 	Queue<GroupStampedMessage> deliverqueue;
 
 	List<String> inclu_groups;
 
-	HashMap<String, Queue<GroupStampedMessage>> hashmap = new HashMap<String, Queue<GroupStampedMessage>>();
+	HashMap<String, Stack<GroupStampedMessage>> hashmap = new HashMap<String, Stack<GroupStampedMessage>>();
 
 	public COMulticast(MessagePasser mp, String configuration_filename) {
 		this.mp = mp;
 		inclu_groups = new ArrayList<String>();
+		holdback_queue = new Hashtable<String, Queue<GroupStampedMessage>>();
 		deliverqueue = mp.getDeliver();
 		clocks = new HashMap<String, ClockService>();
 		YamlParser yamlparser = new YamlParser();
@@ -53,13 +56,15 @@ public class COMulticast {
 			// System.out.println("The name is " + this.groupName);
 			if (groups.get(i).find(mp.getName()) != -1) {
 				String name = groups.get(i).groupName;
-				hashmap.put(name, new LinkedList<GroupStampedMessage>());
+				hashmap.put(name, new Stack<GroupStampedMessage>());
 				inclu_groups.add(name);
 				COqueuestable.put(name, new PriorityQueue<GroupStampedMessage>(
 						20, comparator));
 				holdback_queue.put(name, new LinkedList<GroupStampedMessage>());
-				new Thread(new OfferCOqueue(this, name));
-				new Thread(new OfferHoldbackQueue(this, name));
+				//System.out.println("before threads are created");
+				new Thread(new OfferCOqueue(this, name)).start();
+				new Thread(new OfferHoldbackQueue(this, name)).start();
+				//System.out.println("after threads are created");
 
 			}
 		}
@@ -97,7 +102,7 @@ public class COMulticast {
 					timessage.getDest(), timessage.getKind(),
 					timessage.getData(), timessage.get_isSendtoLogger(),
 					thegroup.getGroupSize(), thegroup);
-			gmessage.setTimeStamp(clock.getTimeStamp());
+			gmessage.setGroupTimeStamp(clock.getTimeStamp());
 			gmessage.set_source(timessage.getSource());
 			try {
 				rmulticast.multicastMsg(gmessage, thegroup);
@@ -113,45 +118,56 @@ public class COMulticast {
 	}
 
 	public void receive(String groupname) throws InterruptedException {
+		GroupStampedMessage gmessage = null;
 		PriorityQueue<GroupStampedMessage> COqueue = COqueuestable
 				.get(groupname);
-		Queue<GroupStampedMessage> delayqueue = hashmap.get(groupname);
+		Stack<GroupStampedMessage> delayqueue = hashmap.get(groupname);
 		synchronized (delayqueue) {
-			synchronized (COqueue) {
-				while (delayqueue.isEmpty()) {
+				while (delayqueue.isEmpty() || isRead) {
 					delayqueue.wait();
+					isRead = false;
 				}
-				COqueue.offer(delayqueue.poll());
-				isAvailable = true;
-				COqueue.notifyAll();
+				gmessage = delayqueue.peek();
+				//delayqueue.peek().print();
+				isRead = true;
+				//COqueue.wait();	
 			}
+		synchronized (COqueue) { 
+			COqueue.offer(gmessage);
+			isAvailable = true;
+			COqueue.notifyAll();
 		}
 	}
 
-	public void deliver(String groupname) {
+	public void deliver(String groupname) throws InterruptedException {
+		//System.out.println("in deliver");
 		PriorityQueue<GroupStampedMessage> COqueue = COqueuestable
 				.get(groupname);
 		Queue<GroupStampedMessage> queue = holdback_queue.get(groupname);
+		System.out.println("the size of holdback" + queue.size());
 		synchronized (COqueue) {
-			synchronized (queue) {
 				while (COqueue.isEmpty() || !isAvailable) {
 					try {
+						System.out.println("here before wait");
 						COqueue.wait();
+						System.out.println("here after wait");
 					} catch (InterruptedException e) {
 						System.err.println("error when wait");
 					}
 				}
-
+				//isAvailable = false;
+				
 				if (COsort(groupname, COqueue.peek())) {
 					queue.offer(COqueue.poll());
-					synchronized (clocks.get(groupname)) {
-						ClockService cs = clocks.get(groupname);
-						cs.compare(queue.peek().getTimeStamp());
-					}
+//					synchronized (clocks.get(groupname)) {
+//						ClockService cs = clocks.get(groupname);
+//						cs.compare(queue.peek().getTimeStamp());
+//					}
 
 				}
 				isAvailable = false;
-			}
+				//COqueue.notifyAll();
+				//COqueue.wait();
 		}
 	}
 
@@ -169,7 +185,8 @@ public class COMulticast {
 		boolean isNext = false;
 		ClockService cs = clocks.get(groupname);
 		int[] g1vec = g1.getTimeStamp();
-		int pos = cs.getPosition();
+		//int pos = cs.getPosition();
+		int pos = g1.get().find(g1.getSource());
 		int counter = 0;
 		for (int i = 0; i < g1vec.length; i++) {
 			if (cs.getTimeStamp()[i] >= g1vec[i]) {
@@ -177,9 +194,10 @@ public class COMulticast {
 			}
 		}
 
-		if (cs.getTimeStamp()[pos] != (g1vec[pos] + 1)
+		if ((cs.getTimeStamp()[pos] + 1) == g1vec[pos]
 				&& counter == (g1vec.length - 1)) {
 			isNext = true;
+			cs.setBit(pos, g1vec[pos]);
 		}
 
 		return isNext;

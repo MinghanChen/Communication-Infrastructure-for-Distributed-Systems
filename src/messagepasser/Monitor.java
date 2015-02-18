@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Queue;
+import java.util.Stack;
 
 import multicast.GroupStampedMessage;
 import yamlparser.YamlParser;
@@ -47,11 +48,14 @@ public class Monitor implements Runnable {
 			while (true) {
 				try {
 					content = (TimeStampedMessage) receive.readObject();
+					//System.out.println("in true loop");
 					if(!content.getMulti())
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
 					else{
 						synchronized(deliverqueue){
 							deliverqueue.offer((GroupStampedMessage)content);
+							
+							//System.out.println("insert one");
 						}
 					}
 				} catch (ClassNotFoundException e) {

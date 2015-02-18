@@ -28,4 +28,8 @@ public class VectorClock implements ClockService{
 	public int[] getTimeStamp(){
 		return this.timeStamp;
 	}
+	
+	public void setBit(int index, int value) {
+		timeStamp[index] = value;
+	}
 }

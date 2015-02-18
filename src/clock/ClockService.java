@@ -10,4 +10,6 @@ public interface ClockService {
 	
 	public int getPosition();
 	
+	public void setBit(int index, int value);
+	
 }

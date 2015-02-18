@@ -2,6 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/Michael-Gao/Documents/Tencent Files/653534131/FileRecv/CommunicationInfrastructurelast/CommunicationInfrastructurelast/CommunicationInfrastructurelast/snakeyaml-1.14.jar"/>
+	<classpathentry kind="lib" path="lib/snakeyaml-1.14.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

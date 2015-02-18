@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
+import java.util.Stack;
 
 import messagepasser.MessagePasser;
 
@@ -13,12 +14,12 @@ public class RMulticast {
 	List<Group> groups;
 	MessagePasser mp;
 	Queue<GroupStampedMessage> deliverqueue;
-	HashMap<String, Queue<GroupStampedMessage>> hashmap;
+	HashMap<String, Stack<GroupStampedMessage>> hashmap;
 
 	// ClockService clock = null;
 
 	public RMulticast(MessagePasser mp, List<Group> groups,
-			HashMap<String, Queue<GroupStampedMessage>> hashmap) {
+			HashMap<String, Stack<GroupStampedMessage>> hashmap) {
 		this.mp = mp;
 		this.deliverqueue = mp.getDeliver();
 		this.groups = groups;
@@ -61,7 +62,8 @@ public class RMulticast {
 	}
 
 	public void MulticastRec() throws NumberFormatException,
-			UnknownHostException, IOException {
+			UnknownHostException, IOException, InterruptedException {
+		
 		GroupStampedMessage tmsg = null;
 
 		while (true) {
@@ -98,11 +100,13 @@ public class RMulticast {
 			}
 			if (hasMsg)
 				continue;
-
+			
 			synchronized (hashmap.get(groupname)) {
 				synchronized (deliverqueue) {
-					hashmap.get(groupname).add(tmsg);
-					System.out.println(tmsg.getData());
+					//System.out.println(tmsg.getSource()+tmsg.getDest()+tmsg.getData());
+					hashmap.get(groupname).push(tmsg);
+					//System.out.println("size is "+hashmap.get(groupname).size());
+					//System.out.println(tmsg.getData());
 					if (tmsg.getSource().equals(this.mp.getName()))
 						continue;
 					hashmap.get(groupname).notifyAll();

@@ -55,7 +55,7 @@ public class Demo {
 					}
 				}
 				else if(readFromCmdFirst.trim().equals("2")){
-					COMessage(br, args[0], cm);
+					MulticastChoices(br, args[0], cm);
 				}
 				else{
 					continue;
@@ -110,6 +110,19 @@ public class Demo {
 		}
 	}
 	
+	private static void MulticastChoices(BufferedReader br, String localname, COMulticast cm) throws IOException {
+		System.out.println("> 1 for send (Multicasting message), 2 for receive (multicasting message)");
+		String choice = br.readLine();
+	 
+		if (choice.trim().equals("1")) {
+			COMessage(br, localname, cm);
+		}
+		if (choice.trim().equals("2")) {
+			COreceive(br, cm);
+		}
+		
+	}
+	
 	private static void COMessage(BufferedReader br, String localname, COMulticast cm) throws IOException {
 		System.out.println(">Group name you want to multicast:");
 		String groupname = br.readLine();
@@ -121,6 +134,14 @@ public class Demo {
 		cm.setGroup(groupname);
 		tmsg.set_source(localname);
 		cm.coMulticast(tmsg);
+		
+	}
+	
+	private static void COreceive(BufferedReader br, COMulticast cm) throws IOException {
+		System.out.println(">Group name you want to receive:");
+		String groupname = br.readLine();
+		cm.getGMessage(groupname);
+		
 	}
 	
 }

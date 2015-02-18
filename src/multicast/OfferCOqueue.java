@@ -10,10 +10,14 @@ public class OfferCOqueue implements Runnable{
 	}
 	
 	public void run() {
-		try {
-			comulticast.receive(groupname);
-		} catch (InterruptedException e) {
-			System.err.println("cannot create offerCOqueue()");
+		while (true) {
+			try {
+				//System.out.println("in the run of OfferCOqueue");
+				comulticast.receive(groupname);
+			} catch (InterruptedException e) {
+				System.err.println("cannot create offerCOqueue()");
+			}
 		}
+		
 	}
 }

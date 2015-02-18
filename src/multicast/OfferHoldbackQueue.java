@@ -10,6 +10,13 @@ public class OfferHoldbackQueue implements Runnable{
 	}
 	
 	public void run() {
-		comulticast.deliver(groupname);
+		while (true) {
+			try {
+				comulticast.deliver(groupname);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }
