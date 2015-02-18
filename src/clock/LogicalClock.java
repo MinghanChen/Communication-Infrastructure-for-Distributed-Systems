@@ -33,4 +33,8 @@ public class LogicalClock implements ClockService{
 	public int getPosition() {
 		return 0;
 	}
+	
+	public void print() {
+		
+	}
 }

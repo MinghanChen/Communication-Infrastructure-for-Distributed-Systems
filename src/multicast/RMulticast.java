@@ -82,7 +82,7 @@ public class RMulticast {
 
 			boolean hasMsg = false;
 			for (GroupStampedMessage gmsg : hashmap.get(groupname)) {
-				if (gmsg.getSource().equals(tmsg.getSource())
+				if (gmsg.getData().equals(tmsg.getData())
 						&& groupname.equals(gmsg.get().groupName)) {
 					int[] garray1 = gmsg.getTimeStamp();
 					int[] garray2 = tmsg.getTimeStamp();
@@ -101,7 +101,7 @@ public class RMulticast {
 					}
 				}
 			}
-			System.out.println(tmsg.getSource()+tmsg.getDest()+tmsg.getData());
+			//System.out.println(tmsg.getSource()+tmsg.getDest()+tmsg.getData());
 			if(hasMsg)
 				continue;
 
@@ -110,7 +110,7 @@ public class RMulticast {
 
 					//System.out.println(tmsg.getSource()+tmsg.getDest()+tmsg.getData());
 					hashmap.get(groupname).push(tmsg);
-					//System.out.println("size is "+hashmap.get(groupname).size());
+					//System.out.println("size of the stack is : "+hashmap.get(groupname).size());
 					//System.out.println(tmsg.getData());
 
 					if (tmsg.getSource().equals(this.mp.getName()))

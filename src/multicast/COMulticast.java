@@ -50,7 +50,7 @@ public class COMulticast {
 		}
 		this.groups = yamlparser.getGroups();
 		COqueuestable = new Hashtable<String, PriorityQueue<GroupStampedMessage>>();
-		Comparator<GroupStampedMessage> comparator = new CompareGroupMess();
+		//Comparator<GroupStampedMessage> comparator = new CompareGroupMess();
 
 		for (int i = 0; i < groups.size(); i++) {
 			// System.out.println("The name is " + this.groupName);
@@ -59,7 +59,7 @@ public class COMulticast {
 				hashmap.put(name, new Stack<GroupStampedMessage>());
 				inclu_groups.add(name);
 				COqueuestable.put(name, new PriorityQueue<GroupStampedMessage>(
-						20, comparator));
+						20, new CompareGroupMess()));
 				holdback_queue.put(name, new LinkedList<GroupStampedMessage>());
 				//System.out.println("before threads are created");
 				new Thread(new OfferCOqueue(this, name)).start();
@@ -130,11 +130,14 @@ public class COMulticast {
 				gmessage = delayqueue.peek();
 				//delayqueue.peek().print();
 				isRead = true;
+				isAvailable = true;
 				//COqueue.wait();	
 			}
 		synchronized (COqueue) { 
 			COqueue.offer(gmessage);
-			isAvailable = true;
+			System.out.println("COqueue size : " + COqueue.size());
+			
+			COqueue.peek().print();
 			COqueue.notifyAll();
 		}
 	}
@@ -155,19 +158,11 @@ public class COMulticast {
 						System.err.println("error when wait");
 					}
 				}
-				//isAvailable = false;
+				isAvailable = false;
 				
 				if (COsort(groupname, COqueue.peek())) {
 					queue.offer(COqueue.poll());
-//					synchronized (clocks.get(groupname)) {
-//						ClockService cs = clocks.get(groupname);
-//						cs.compare(queue.peek().getTimeStamp());
-//					}
-
 				}
-				isAvailable = false;
-				//COqueue.notifyAll();
-				//COqueue.wait();
 		}
 	}
 
@@ -198,6 +193,8 @@ public class COMulticast {
 				&& counter == (g1vec.length - 1)) {
 			isNext = true;
 			cs.setBit(pos, g1vec[pos]);
+			System.out.print("The local clcok : ");
+			cs.print();
 		}
 
 		return isNext;
@@ -210,7 +207,9 @@ class CompareGroupMess implements Comparator<GroupStampedMessage> {
 	// @Override
 	public int compare(GroupStampedMessage g1, GroupStampedMessage g2) {
 		int[] g1vec = g1.getTimeStamp();
+		//System.err.println("g1vec : " + g1vec[1]);
 		int[] g2vec = g2.getTimeStamp();
+		//System.err.println("g2vec : " + g2vec[1]);
 		int biggercounter = 0;
 		int smallercounter = 0;
 		// int equalcounter = 0;
@@ -224,7 +223,7 @@ class CompareGroupMess implements Comparator<GroupStampedMessage> {
 			if (g1vec[i] > g2vec[i]) {
 				biggercounter++;
 			}
-			if (g1vec[i] < g1vec[i]) {
+			if (g1vec[i] < g2vec[i]) {
 				smallercounter++;
 			}
 		}
@@ -234,6 +233,7 @@ class CompareGroupMess implements Comparator<GroupStampedMessage> {
 		} else if (smallercounter > 0 && biggercounter == 0) {
 			return -1;
 		} else {
+			//System.err.println("Big ZERO!");
 			return 0;
 		}
 	}

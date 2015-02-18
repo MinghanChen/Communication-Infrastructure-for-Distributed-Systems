@@ -7,13 +7,13 @@
 # The local node’s name is included in this list
 configuration :
 - name : Alice
-  ip   : 10.0.22.236
+  ip   : 10.0.19.96
   port : 12344
 - name : Bob
-  ip   : 10.0.22.236
+  ip   : 10.0.19.96
   port : 14255
 - name : Charlie
-  ip   : 10.0.22.236
+  ip   : 10.0.19.96
 
   port : 12998
 - name : Dephnie
@@ -23,10 +23,15 @@ configuration :
 # May be changed for further communication as usual
 sendRules :
   - action : delay # Ack message number 4 from bob to alice will not be sent
-    src    : Charlie
-    dest   : Dephnie
+    src    : Alice
+    dest   : Bob
     kind   : ACK
-    seqNum : 33
+    seqNum : 1
+  - action : delay # Ack message number 4 from bob to alice will not be sent
+    src    : Alice
+    dest   : Charlie
+    kind   : ACK
+    seqNum : 1
   - action : drop # Every Lookup message in the system will be delayed
     src    : Bob
     dest   : Alice

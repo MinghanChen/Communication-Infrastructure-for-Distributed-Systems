@@ -12,4 +12,6 @@ public interface ClockService {
 	
 	public void setBit(int index, int value);
 	
+	public void print();
+	
 }

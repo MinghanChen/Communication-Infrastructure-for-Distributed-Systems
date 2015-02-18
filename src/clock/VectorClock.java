@@ -32,4 +32,12 @@ public class VectorClock implements ClockService{
 	public void setBit(int index, int value) {
 		timeStamp[index] = value;
 	}
+	
+	public void print() {
+		StringBuffer sb = new StringBuffer("[ ");
+		for (int i = 0; i < timeStamp.length; i++) {
+			sb.append(timeStamp[i] + " ");
+		}
+		System.out.println(sb.append("]").toString());
+	}
 }
