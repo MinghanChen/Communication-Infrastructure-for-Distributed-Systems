@@ -7,16 +7,16 @@
 # The local node’s name is included in this list
 configuration :
 - name : Alice
-  ip   : 10.0.19.96
+  ip   : 10.0.22.236
   port : 12344
 - name : Bob
-  ip   : 10.0.19.96
+  ip   : 10.0.22.236
   port : 14255
 - name : Charlie
-  ip   : 10.0.19.96
+  ip   : 10.0.22.236
   port : 12998
 - name : Dephnie
-  ip   : 10.0.19.96
+  ip   : 10.0.22.236
   port : 19872
 # This is the incoming port on which MP will listen
 # May be changed for further communication as usual
@@ -25,17 +25,17 @@ sendRules :
     src    : Alice
     dest   : Bob
     kind   : ACK
-    seqNum : 1
+    seqNum : 2
   - action : delay # Ack message number 4 from bob to alice will not be sent
     src    : Alice
     dest   : Charlie
     kind   : ACK
-    seqNum : 1
+    seqNum : 2
   - action : drop # Every Lookup message in the system will be delayed
     src    : Alice
     dest   : Bob
     kind   : DROP
-    seqNum : 1
+    seqNum : 4
 receiveRules :
   - action : delay     # 3rd message from Charlie that anyone
     src    : Charlie        # receives will be duplicated

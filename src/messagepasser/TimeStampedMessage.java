@@ -71,7 +71,7 @@ public class TimeStampedMessage extends Message implements Serializable, Compara
 				result.append("vector clock of receiving port :  ");
 			}
 
-			result.append("The destination : " + super.getDest() + "  The source : " + super.getSource() +
+			result.append("The source : " + super.getSource() +
 					"  The sequence number : " + super.getNum() + "  The content is : " + super.getData() +
 					"  The timeStamp is : {");
 			for (int i = 0; i < this.getTimeStampVec().length; i++) {

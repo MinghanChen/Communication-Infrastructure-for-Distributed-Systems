@@ -194,14 +194,16 @@ public class COMulticast {
 				&& counter == (g1vec.length - 1)) {
 			isNext = true;
 			cs.setBit(pos, g1vec[pos]);
-			//System.out.print("The local clcok : ");
-			//cs.print();
+			
 		}
 		
 		if (g1.isitself && g1vec[pos] <= cs.getTimeStamp()[pos]) {
 			isNext = true;
 		}
 
+		//System.out.print("The local clcok : ");
+		//cs.print();
+		
 		return isNext;
 
 	}
