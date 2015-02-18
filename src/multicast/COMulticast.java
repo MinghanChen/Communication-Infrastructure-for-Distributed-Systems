@@ -135,9 +135,9 @@ public class COMulticast {
 			}
 		synchronized (COqueue) { 
 			COqueue.offer(gmessage);
-			System.out.println("COqueue size : " + COqueue.size());
+			//System.out.println("COqueue size : " + COqueue.size());
 			
-			COqueue.peek().print();
+			//COqueue.peek().print();
 			COqueue.notifyAll();
 		}
 	}
@@ -162,6 +162,7 @@ public class COMulticast {
 				
 				if (COsort(groupname, COqueue.peek())) {
 					queue.offer(COqueue.poll());
+					isAvailable = true;
 				}
 		}
 	}
@@ -180,21 +181,23 @@ public class COMulticast {
 		boolean isNext = false;
 		ClockService cs = clocks.get(groupname);
 		int[] g1vec = g1.getTimeStamp();
-		//int pos = cs.getPosition();
+		//System.out.println("The g1 : " + g1.arraytoString());
 		int pos = g1.get().find(g1.getSource());
+		//System.out.println("g1.getSource() : " + g1.getSource());
 		int counter = 0;
 		for (int i = 0; i < g1vec.length; i++) {
 			if (cs.getTimeStamp()[i] >= g1vec[i]) {
 				counter++;
+				
 			}
 		}
-
+		
 		if ((cs.getTimeStamp()[pos] + 1) == g1vec[pos]
 				&& counter == (g1vec.length - 1)) {
 			isNext = true;
 			cs.setBit(pos, g1vec[pos]);
-			System.out.print("The local clcok : ");
-			cs.print();
+			//System.out.print("The local clcok : ");
+			//cs.print();
 		}
 
 		return isNext;

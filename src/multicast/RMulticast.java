@@ -59,6 +59,7 @@ public class RMulticast {
 		} else {
 			for (String dest : members) {
 				groupstampmess.set_dest(dest);
+				groupstampmess.set_source(groupstampmess.getSource());
 				this.mp.sendMul(groupstampmess);
 			}
 		}
@@ -82,8 +83,8 @@ public class RMulticast {
 
 			boolean hasMsg = false;
 			for (GroupStampedMessage gmsg : hashmap.get(groupname)) {
-				if (gmsg.getData().equals(tmsg.getData())
-						&& groupname.equals(gmsg.get().groupName)) {
+				if (gmsg.getSource().equals(tmsg.getSource())
+						&& groupname.equals(gmsg.get().groupName) && (gmsg.getNum() == tmsg.getNum())) {
 					int[] garray1 = gmsg.getTimeStamp();
 					int[] garray2 = tmsg.getTimeStamp();
 					boolean flag = true;

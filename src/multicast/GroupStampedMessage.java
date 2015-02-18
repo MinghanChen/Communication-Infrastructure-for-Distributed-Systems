@@ -11,6 +11,8 @@ public class GroupStampedMessage extends TimeStampedMessage implements Serializa
 	int size;
 	Group thegroup;
 	
+	boolean isVisted = false;
+	
 	public GroupStampedMessage(String dest, String kind, Object data, boolean isSendtoLogger,
 								int size, Group thegroup) {
 		super(dest, kind, data, isSendtoLogger);
@@ -56,5 +58,9 @@ public class GroupStampedMessage extends TimeStampedMessage implements Serializa
 	public void print() {
 		System.out.println(super.toString());
 		System.out.println("The group timestamp is : " + arraytoString());
+	}
+	
+	public void setVisited() {
+		this.isVisted = true;
 	}
 }

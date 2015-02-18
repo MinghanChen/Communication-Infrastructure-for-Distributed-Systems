@@ -274,7 +274,7 @@ public class MessagePasser {
 		sendRuleTable = yamlparser.getSendRuleTable();
 		
 		message.setMulti();
-		message.set_source(this.name);
+		//message.set_source(this.name);
 		
 		String destination = message.getDest();
 		String key = name + destination + message.getKind() + message.getNum();
