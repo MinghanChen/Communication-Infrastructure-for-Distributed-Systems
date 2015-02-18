@@ -29,6 +29,7 @@ public class MessagePasser {
 	private Hashtable<String, String> recRuleTable;
 	public  Queue<TimeStampedMessage> senddelay = new LinkedList<TimeStampedMessage>();
 	public  Queue<TimeStampedMessage> recdelay = new LinkedList<TimeStampedMessage>();
+	public  Queue<GroupStampedMessage> groupdelay = new LinkedList<GroupStampedMessage>();
 	public Queue<TimeStampedMessage> receivequeue;
 	public Queue<GroupStampedMessage> deliverqueue;
 	public Hashtable<String, ObjectOutputStream> outputstreamTable;
@@ -94,12 +95,16 @@ public class MessagePasser {
 			}
 		}
 		ServerSocket ss = new ServerSocket(Integer.parseInt(port));
-		new Thread(new Listener( receivequeue, deliverqueue, ss, outputstreamTable, recRuleTable, recdelay)).start();
+		new Thread(new Listener( receivequeue, deliverqueue, ss, outputstreamTable, recRuleTable, recdelay, groupdelay)).start();
 		
 	}
 	
 	public ClockService getVec(){
 		return this.clock;
+	}
+	
+	public int getNum(){
+		return this.seqNumber;
 	}
 	
 	public String getName(){
@@ -152,7 +157,7 @@ public class MessagePasser {
 				TimeStampedMessage delayMes = senddelay.poll();
 				sendout.writeObject(delayMes);
 			}
-			new Thread(new SrcMonitor(receivequeue, deliverqueue, socket, recRuleTable, recdelay)).start();
+			new Thread(new SrcMonitor(receivequeue, deliverqueue, socket, recRuleTable, recdelay,groupdelay)).start();
 			System.out.println("a new srcmonitor");
 			outputstreamTable.put(destination, sendout);
 			
@@ -261,8 +266,13 @@ public class MessagePasser {
 	
 	public void sendMul(GroupStampedMessage message) throws NumberFormatException, UnknownHostException, IOException {
 		YamlParser yamlparser = new YamlParser();
+		try {
+			yamlparser.yamiParser(configuration_filename);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+		sendRuleTable = yamlparser.getSendRuleTable();
 		
-		message.setTimeStamp(clock.getTimeStamp());
 		message.setMulti();
 		
 		String destination = message.getDest();
@@ -286,7 +296,7 @@ public class MessagePasser {
 				TimeStampedMessage delayMes = senddelay.poll();
 				sendout.writeObject(delayMes);
 			}
-			new Thread(new SrcMonitor(receivequeue, deliverqueue, socket, recRuleTable, recdelay)).start();
+			new Thread(new SrcMonitor(receivequeue, deliverqueue, socket, recRuleTable, recdelay,groupdelay)).start();
 			outputstreamTable.put(destination, sendout);
 			
 		}

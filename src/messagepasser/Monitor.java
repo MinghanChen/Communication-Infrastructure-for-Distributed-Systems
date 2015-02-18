@@ -18,15 +18,19 @@ public class Monitor implements Runnable {
 	Queue<GroupStampedMessage> deliverqueue;
 	//BufferedWriter bw;
 	Hashtable<String, String> recRuleTable;
-	public Hashtable<String, ObjectOutputStream> outputstreamTable;
+
+	Hashtable<String, ObjectOutputStream> outputstreamTable;
 	Queue<TimeStampedMessage> recdelay;
+	Queue<GroupStampedMessage> groupdelay;
 	
-	public Monitor(Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay, Hashtable<String,
-				  ObjectOutputStream> outputstreamTable, ObjectOutputStream sendout) {
+	public Monitor(Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay, Queue<GroupStampedMessage> groupdelay,
+			Hashtable<String, ObjectOutputStream> outputstreamTable, ObjectOutputStream sendout) {
 		this.socket = socket;
 		this.receivequeue = receivequeue;
 		this.recRuleTable = recRuleTable;
+		this.outputstreamTable = outputstreamTable;
 		this.recdelay = recdelay;
+		this.groupdelay = groupdelay;
 		this.deliverqueue = deliverqueue;
 		this.outputstreamTable = outputstreamTable;
 		try {
@@ -52,19 +56,12 @@ public class Monitor implements Runnable {
 					if(!content.getMulti())
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
 					else{
-						synchronized(deliverqueue){
-							deliverqueue.offer((GroupStampedMessage)content);
-							
-							//System.out.println("insert one");
-						}
+						deliverMsg(deliverqueue, groupdelay, content, recRuleTable);
 					}
 				} catch (ClassNotFoundException e) {
 					System.out.println("Cannot transfer to Message type");
 					
 				} 
-				//bw.write(content + "\n");
-				//bw.close();
-				//System.out.println("The content I receive : " + content);
 			}
 		} catch (IOException e) {
 			System.out.println("Cannot read");
@@ -77,11 +74,43 @@ public class Monitor implements Runnable {
 		}
 	}
 	
-	private void offerMsg(Queue<TimeStampedMessage> rcvQueue, Queue<TimeStampedMessage> delayQueue, TimeStampedMessage message, Hashtable<String, String> recRuleTable) {
+	private void deliverMsg(Queue<GroupStampedMessage> rcvQueue, Queue<GroupStampedMessage> delayQueue, TimeStampedMessage message, Hashtable<String, String> recRuleTable) {
 		synchronized (rcvQueue) {
 			synchronized (delayQueue) {
 				String key =  message.getSource() + message.getDest() + message.getKind() + Integer.toString(message.getNum());
+				//System.out.println(key);
 				String flag = this.checkReceiveRules(recRuleTable, message, key);
+				if(flag.equals("drop"))
+					return;
+				else if (flag.equals("dupe")){
+					rcvQueue.offer((GroupStampedMessage) message);
+					TimeStampedMessage newMes = new MessagePasser().clone(message);
+					rcvQueue.offer((GroupStampedMessage)newMes);
+				}
+				else if (flag.equals("delay")){
+					recdelay.offer(message);
+					return;
+				}
+				else{
+					rcvQueue.offer((GroupStampedMessage)message);
+				}
+				while(!recdelay.isEmpty()){
+					GroupStampedMessage delayMes = groupdelay.poll();
+					rcvQueue.offer(delayMes);
+				}			
+			return;
+			}
+		}
+	}
+	
+	private void offerMsg(Queue<TimeStampedMessage> rcvQueue, Queue<TimeStampedMessage> delayQueue, TimeStampedMessage message, Hashtable<String, String> recRuleTable) {
+		synchronized (rcvQueue) {
+			synchronized (delayQueue) {
+				
+				String key =  message.getSource() + message.getDest() + message.getKind() + Integer.toString(message.getNum());
+				
+				String flag = this.checkReceiveRules(recRuleTable, message, key);
+				
 				if(flag.equals("drop"))
 					return;
 				else if (flag.equals("dupe")){

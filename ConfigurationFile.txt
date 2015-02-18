@@ -13,10 +13,11 @@ configuration :
   ip   : 10.0.22.236
   port : 14255
 - name : Charlie
-  ip   : 10.0.19.96
+  ip   : 10.0.22.236
+
   port : 12998
 - name : Dephnie
-  ip   : 10.0.22.210
+  ip   : 10.0.17.135
   port : 19872
 # This is the incoming port on which MP will listen
 # May be changed for further communication as usual
@@ -50,6 +51,7 @@ groups : # A single, top-level section in the YAML file
   members : # Any number of members in the group
   - Bob
   - Alice
+  - Charlie
 - name : Group2 # As many groups as you’d like
   members :
   - Dephnie

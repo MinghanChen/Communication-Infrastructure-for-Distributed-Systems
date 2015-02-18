@@ -23,7 +23,7 @@ public class COMulticast {
 	private HashMap<String, ClockService> clocks;
 	// private ClockService clock;
 	private Hashtable<String, PriorityQueue<GroupStampedMessage>> COqueuestable;
-	private Hashtable<String, Queue<GroupStampedMessage>> holdback_queue;
+	private Hashtable<String, Queue<GroupStampedMessage>> holdback_queue = new Hashtable<String, Queue<GroupStampedMessage>>();
 	private boolean isAvailable = false;
 	private List<Group> groups;
 	private MessagePasser mp;
@@ -144,13 +144,13 @@ public class COMulticast {
 		PriorityQueue<GroupStampedMessage> COqueue = COqueuestable
 				.get(groupname);
 		Queue<GroupStampedMessage> queue = holdback_queue.get(groupname);
-		System.out.println("the size of holdback" + queue.size());
+		//System.out.println("the size of holdback" + queue.size());
 		synchronized (COqueue) {
 				while (COqueue.isEmpty() || !isAvailable) {
 					try {
-						System.out.println("here before wait");
+						//System.out.println("here before wait");
 						COqueue.wait();
-						System.out.println("here after wait");
+						//System.out.println("here after wait");
 					} catch (InterruptedException e) {
 						System.err.println("error when wait");
 					}

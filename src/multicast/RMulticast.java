@@ -46,6 +46,9 @@ public class RMulticast {
 		List<String> members = thegroup.getNames();
 		if (groupstampmess.getSource().equals(this.mp.getName())) {
 			this.mp.increase();
+			//System.out.println(this.mp.getNum());
+			groupstampmess.set_seqNum(this.mp.getNum());
+			groupstampmess.setTimeStamp(this.mp.getVec().getTimeStamp());
 			for (String dest : members) {
 				groupstampmess.set_dest(dest);
 				this.mp.sendMul(groupstampmess);
@@ -62,13 +65,12 @@ public class RMulticast {
 	}
 
 	public void MulticastRec() throws NumberFormatException,
-			UnknownHostException, IOException, InterruptedException {
-		
+			UnknownHostException, IOException {
 		GroupStampedMessage tmsg = null;
 
 		while (true) {
 			synchronized (deliverqueue) {
-				tmsg = this.deliverqueue.poll();
+					tmsg = this.deliverqueue.poll();
 			}
 
 			if (tmsg == null) {
@@ -92,27 +94,35 @@ public class RMulticast {
 								break;
 							}
 						}
+
 					if (flag) {
 						hasMsg = true;
 						break;
 					}
 				}
 			}
-			if (hasMsg)
+			System.out.println(tmsg.getSource()+tmsg.getDest()+tmsg.getData());
+			if(hasMsg)
 				continue;
-			
+
 			synchronized (hashmap.get(groupname)) {
 				synchronized (deliverqueue) {
+
 					//System.out.println(tmsg.getSource()+tmsg.getDest()+tmsg.getData());
 					hashmap.get(groupname).push(tmsg);
 					//System.out.println("size is "+hashmap.get(groupname).size());
 					//System.out.println(tmsg.getData());
+
 					if (tmsg.getSource().equals(this.mp.getName()))
 						continue;
 					hashmap.get(groupname).notifyAll();
 				}
 
 			}
+			if(tmsg.getSource().equals(this.mp.getName()))
+				continue;
+			
+//			System.out.println(tmsg.getData());
 			this.multicastMsg(tmsg, thegroup);
 		}
 

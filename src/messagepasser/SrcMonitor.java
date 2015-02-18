@@ -17,14 +17,16 @@ public  class SrcMonitor implements Runnable {
 	Queue<GroupStampedMessage> deliverqueue;
 	Hashtable<String, String> recRuleTable;
 	Queue<TimeStampedMessage> recdelay;
+	Queue<GroupStampedMessage> groupdelay;
 	
 	
-	public SrcMonitor(Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay) {
+	public SrcMonitor(Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay,  Queue<GroupStampedMessage> groupdelay) {
 		this.socket = socket;
 		this.receivequeue = receivequeue;
 		this.recRuleTable = recRuleTable;
 		this.recdelay = recdelay;
 		this.deliverqueue = deliverqueue;
+		this.groupdelay = groupdelay;
 		
 		try {
 			//din = new DataInputStream(socket.getInputStream());
@@ -49,10 +51,9 @@ public  class SrcMonitor implements Runnable {
 					if(content.getMulti())
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
 					else{
-						synchronized(deliverqueue){
-							deliverqueue.offer((GroupStampedMessage)content);
-				
-						}
+						//synchronized(deliverqueue){
+						deliverMsg(deliverqueue, groupdelay, content, recRuleTable);
+
 					}
 				} catch (ClassNotFoundException e) {
 					System.out.println("Cannot transfer to Message type");
@@ -69,6 +70,34 @@ public  class SrcMonitor implements Runnable {
 				this.removeSocket();
 			} catch (IOException e) {
 				System.out.println("remove failure!");
+			}
+		}
+	}
+	private void deliverMsg(Queue<GroupStampedMessage> rcvQueue, Queue<GroupStampedMessage> delayQueue, TimeStampedMessage message, Hashtable<String, String> recRuleTable) {
+		synchronized (rcvQueue) {
+			synchronized (delayQueue) {
+				String key =  message.getSource() + message.getDest() + message.getKind() + Integer.toString(message.getNum());
+				//System.out.println(key);
+				String flag = this.checkReceiveRules(recRuleTable, message, key);
+				if(flag.equals("drop"))
+					return;
+				else if (flag.equals("dupe")){
+					rcvQueue.offer((GroupStampedMessage) message);
+					TimeStampedMessage newMes = new MessagePasser().clone(message);
+					rcvQueue.offer((GroupStampedMessage)newMes);
+				}
+				else if (flag.equals("delay")){
+					recdelay.offer(message);
+					return;
+				}
+				else{
+					rcvQueue.offer((GroupStampedMessage)message);
+				}
+				while(!recdelay.isEmpty()){
+					GroupStampedMessage delayMes = groupdelay.poll();
+					rcvQueue.offer(delayMes);
+				}			
+			return;
 			}
 		}
 	}

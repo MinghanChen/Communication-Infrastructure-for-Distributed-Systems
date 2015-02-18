@@ -11,18 +11,15 @@ public class MultiRecMonitor implements Runnable{
 	
 	public void run() {
 		try {
-			try {
-				multicast.MulticastRec();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			multicast.MulticastRec();
 		} catch (NumberFormatException e) {
 			System.err.println("NumberFormatException");
 		} catch (UnknownHostException e) {
-			System.err.println("UnknownHostException");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
-			System.err.println("IOException");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
