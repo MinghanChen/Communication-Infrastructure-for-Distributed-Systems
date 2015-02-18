@@ -8,4 +8,6 @@ public interface ClockService {
 	
 	public int[] getTimeStamp();
 	
+	public int getPosition();
+	
 }

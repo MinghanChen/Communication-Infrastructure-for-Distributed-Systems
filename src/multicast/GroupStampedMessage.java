@@ -31,6 +31,17 @@ public class GroupStampedMessage extends TimeStampedMessage implements Serializa
 	
 	public Group get() {
 		return thegroup;
+
+	}
+	
+	public String arraytoString() {
+		StringBuffer sb = new StringBuffer("{ ");
+		for (int i = 0; i < size; i++) {
+			sb.append(grouparray[i] + " ");
+		}
+		sb.append("}");
+		return sb.toString();
+
 	}
 	
 	public String getgroupname() {
@@ -39,5 +50,10 @@ public class GroupStampedMessage extends TimeStampedMessage implements Serializa
 			sb.append(grouparray);
 		}
 		return sb.toString();
+	}
+	
+	public void print() {
+		super.toString();
+		System.out.println("The group timestamp is : " + arraytoString());
 	}
 }

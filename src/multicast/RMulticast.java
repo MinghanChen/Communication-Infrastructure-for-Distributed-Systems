@@ -2,34 +2,30 @@ package multicast;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
 
-import yamlparser.YamlParser;
-import clock.ClockService;
-import clock.VectorClock;
-import messagepasser.Message;
 import messagepasser.MessagePasser;
-import messagepasser.TimeStampedMessage;
 
 public class RMulticast {
 	String groupName = "";
 	List<Group> groups;
 	MessagePasser mp;
 	Queue<GroupStampedMessage> deliverqueue;
-	HashMap<String, ArrayList<GroupStampedMessage>> hashmap;
-	//ClockService clock = null;
+	HashMap<String, Queue<GroupStampedMessage>> hashmap;
 
-	public RMulticast(MessagePasser mp, List<Group> groups, HashMap<String, ArrayList<GroupStampedMessage>> hashmap) {
+	// ClockService clock = null;
+
+	public RMulticast(MessagePasser mp, List<Group> groups,
+			HashMap<String, Queue<GroupStampedMessage>> hashmap) {
 		this.mp = mp;
 		this.deliverqueue = mp.getDeliver();
 		this.groups = groups;
-		
+
 		this.hashmap = hashmap;
 		// System.out.println();
-		
+
 		new Thread(new MultiRecMonitor(this)).start();
 
 	}
@@ -38,8 +34,8 @@ public class RMulticast {
 		this.groupName = groupname;
 
 	}
-	
-	public Queue<GroupStampedMessage> getdeliver(){
+
+	public Queue<GroupStampedMessage> getdeliver() {
 		return this.deliverqueue;
 	}
 
@@ -49,11 +45,15 @@ public class RMulticast {
 		List<String> members = thegroup.getNames();
 		if (groupstampmess.getSource().equals(this.mp.getName())) {
 			this.mp.increase();
+			//System.out.println(this.mp.getNum());
+			groupstampmess.set_seqNum(this.mp.getNum());
+			groupstampmess.setTimeStamp(this.mp.getVec().getTimeStamp());
 			for (String dest : members) {
 				groupstampmess.set_dest(dest);
 				this.mp.sendMul(groupstampmess);
 				if (members.indexOf(dest) == members.size() - 1)
 					break;
+
 			}
 		} else {
 			for (String dest : members) {
@@ -66,7 +66,8 @@ public class RMulticast {
 	public void MulticastRec() throws NumberFormatException,
 			UnknownHostException, IOException {
 		GroupStampedMessage tmsg = null;
-			while (true) {
+
+		while (true) {
 			synchronized (deliverqueue) {
 					tmsg = this.deliverqueue.poll();
 			}
@@ -74,10 +75,10 @@ public class RMulticast {
 			if (tmsg == null) {
 				continue;
 			}
-
 			Group thegroup = tmsg.get();
 			String groupname = thegroup.groupName;
 			// GroupStampedMessage timsg;
+
 			boolean hasMsg = false;
 			for (GroupStampedMessage gmsg : hashmap.get(groupname)) {
 				if (gmsg.getSource().equals(tmsg.getSource())
@@ -85,25 +86,41 @@ public class RMulticast {
 					int[] garray1 = gmsg.getTimeStamp();
 					int[] garray2 = tmsg.getTimeStamp();
 					boolean flag = true;
-					if(garray1.length == garray2.length)
-						for(int i = 0 ; i < garray1.length; i++){
-							if(garray1[i] != garray2[i]){
+					if (garray1.length == garray2.length)
+						for (int i = 0; i < garray1.length; i++) {
+							if (garray1[i] != garray2[i]) {
 								flag = false;
 								break;
 							}
 						}
-					if(flag){
+
+					if (flag) {
 						hasMsg = true;
 						break;
 					}
 				}
 			}
+			System.out.println(tmsg.getSource()+tmsg.getDest()+tmsg.getData());
 			if(hasMsg)
 				continue;
-			hashmap.get(groupname).add(tmsg);
-			System.out.println(tmsg.getData());
+			//System.out.println(tmsg.getData());
+			synchronized (hashmap.get(groupname)) {
+				synchronized (deliverqueue) {
+					
+					hashmap.get(groupname).add(tmsg);
+					//System.out.println(groupname + ":"+hashmap.get(groupname).size());
+					
+					
+					if (tmsg.getSource().equals(this.mp.getName()))
+						continue;
+					hashmap.get(groupname).notifyAll();
+				}
+
+			}
 			if(tmsg.getSource().equals(this.mp.getName()))
 				continue;
+			
+//			System.out.println(tmsg.getData());
 			this.multicastMsg(tmsg, thegroup);
 		}
 
