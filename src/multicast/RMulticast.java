@@ -51,6 +51,7 @@ public class RMulticast {
 			groupstampmess.setTimeStamp(this.mp.getVec().getTimeStamp());
 			for (String dest : members) {
 				groupstampmess.set_dest(dest);
+				groupstampmess.setIsitself(true);
 				this.mp.sendMul(groupstampmess);
 				if (members.indexOf(dest) == members.size() - 1)
 					break;
@@ -60,6 +61,7 @@ public class RMulticast {
 			for (String dest : members) {
 				groupstampmess.set_dest(dest);
 				groupstampmess.set_source(groupstampmess.getSource());
+				groupstampmess.setIsitself(false);
 				this.mp.sendMul(groupstampmess);
 			}
 		}
@@ -108,14 +110,16 @@ public class RMulticast {
 
 			synchronized (hashmap.get(groupname)) {
 				synchronized (deliverqueue) {
-
 					//System.out.println(tmsg.getSource()+tmsg.getDest()+tmsg.getData());
 					hashmap.get(groupname).push(tmsg);
 					//System.out.println("size of the stack is : "+hashmap.get(groupname).size());
 					//System.out.println(tmsg.getData());
 
-					if (tmsg.getSource().equals(this.mp.getName()))
+					if (tmsg.getSource().equals(this.mp.getName())) {
+						hashmap.get(groupname).notifyAll();
 						continue;
+					}
+						
 					hashmap.get(groupname).notifyAll();
 				}
 

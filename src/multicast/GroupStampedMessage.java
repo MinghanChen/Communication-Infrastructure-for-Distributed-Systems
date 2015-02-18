@@ -10,6 +10,7 @@ public class GroupStampedMessage extends TimeStampedMessage implements Serializa
 	int[] grouparray;
 	int size;
 	Group thegroup;
+	boolean isitself;
 	
 	boolean isVisted = false;
 	
@@ -19,6 +20,10 @@ public class GroupStampedMessage extends TimeStampedMessage implements Serializa
 		grouparray = new int[size];
 		this.size = size;
 		this.thegroup = thegroup; 
+	}
+	
+	public void setIsitself(Boolean judge) {
+		isitself = judge;
 	}
 	
 	public void setGroupTimeStamp(int[] timestamp) {

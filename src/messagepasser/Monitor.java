@@ -120,10 +120,12 @@ public class Monitor implements Runnable {
 				}
 				else if (flag.equals("delay")){
 					recdelay.offer(message);
+					
 					return;
 				}
 				else{
 					rcvQueue.offer(message);
+					//System.out.println("destination : " + message.getDest());
 				}
 				while(!recdelay.isEmpty()){
 					TimeStampedMessage delayMes = recdelay.poll();

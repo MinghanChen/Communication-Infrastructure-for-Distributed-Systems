@@ -124,6 +124,7 @@ public class COMulticast {
 		Stack<GroupStampedMessage> delayqueue = hashmap.get(groupname);
 		synchronized (delayqueue) {
 				while (delayqueue.isEmpty() || isRead) {
+					//System.out.println()
 					delayqueue.wait();
 					isRead = false;
 				}
@@ -135,9 +136,6 @@ public class COMulticast {
 			}
 		synchronized (COqueue) { 
 			COqueue.offer(gmessage);
-			//System.out.println("COqueue size : " + COqueue.size());
-			
-			//COqueue.peek().print();
 			COqueue.notifyAll();
 		}
 	}
@@ -159,7 +157,7 @@ public class COMulticast {
 					}
 				}
 				isAvailable = false;
-				
+				//System.out.println("Before cosort");
 				if (COsort(groupname, COqueue.peek())) {
 					queue.offer(COqueue.poll());
 					isAvailable = true;
@@ -198,6 +196,10 @@ public class COMulticast {
 			cs.setBit(pos, g1vec[pos]);
 			//System.out.print("The local clcok : ");
 			//cs.print();
+		}
+		
+		if (g1.isitself && g1vec[pos] <= cs.getTimeStamp()[pos]) {
+			isNext = true;
 		}
 
 		return isNext;
