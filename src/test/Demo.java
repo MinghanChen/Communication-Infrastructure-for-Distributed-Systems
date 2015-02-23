@@ -14,7 +14,7 @@ import mutualexclusion.MultualExclusion;
 
 public class Demo {
 
-	private static final String PROMPT_INFO_FIRST = "> 1 for unicast, 2 for multicast 3 for mutual exclusion";
+	private static final String PROMPT_INFO_FIRST = "> 1 for unicast, 2 for multicast, 3 for mutual exclusion";
 	private static final String PROMPT_INFO = "> 1 for send, 2 for receive, 3 for exit, 4 for issue timestamp";
 
 	public static void main(String[] args) {

@@ -340,7 +340,7 @@ public class MessagePasser {
 		synchronized (ackstack) {
 			ackstack.push(source);
 			ackstack.notifyAll();
-			//System.out.println("in addACK()");
+			//System.out.println("in addACK()" + source);
 		}
 	}
 	
@@ -353,16 +353,18 @@ public class MessagePasser {
 	
 	protected void handleRequest(TimeStampedMessage content) {
 		GroupStampedMessage groupmess = (GroupStampedMessage)content;
-		String dest = groupmess.getSource();
-		//System.out.println(dest);
-		groupmess.set_dest(dest);
-		groupmess.set_source(this.name);
-		groupmess.setACK();
-		groupmess.setMulti();
-		groupmess.setRequestFalse();    //   这里A给自己多发了一条信息
+		if (requestqueue.peek() != null && content.getSource().equals(requestqueue.peek().getSource()) && content.getNum() <= requestqueue.peek().getNum()) {
+			return;
+		}
 		synchronized (this.requestqueue) {
 			if (isVoted == false) {
 				isVoted = true;
+				String dest = groupmess.getSource();
+				groupmess.set_dest(dest);
+				groupmess.set_source(this.name);
+				groupmess.setACK();
+				groupmess.setMulti();
+				groupmess.setRequestFalse();    //   这里A给自己多发了一条信息
 				try {
 					this.sendMul(groupmess);
 

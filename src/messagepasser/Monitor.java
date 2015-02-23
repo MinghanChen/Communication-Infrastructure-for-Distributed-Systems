@@ -57,21 +57,20 @@ public class Monitor implements Runnable {
 					content = (TimeStampedMessage) receive.readObject();
 					if(!content.getMulti()) {
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
-						System.out.println("here");
 					} else{
 						if (content.getRequest()) {
 							synchronized (mp) {
+								//System.out.println("request received : " + content.toString());
 								mp.handleRequest(content);
-								System.out.println("after mp.handleRequest(content), monitor");
 							}
 						} else if (content.getACK()) {
 							//System.out.println("before mp.addACK(content), monitor");
 							mp.addACK((GroupStampedMessage)content);
-							System.out.println("after mp.addACK(content), monitor");
+							//System.out.println("after mp.addACK(content), monitor");
 						} else if (content.getRelease()) {
 							synchronized (mp) {
 								mp.handleRelease();
-								System.out.println("after mp.handleRelease(content), monitor");
+								//System.out.println("after mp.handleRelease(content), monitor");
 							}
 						} else {
 							deliverMsg(deliverqueue, groupdelay, content, recRuleTable);

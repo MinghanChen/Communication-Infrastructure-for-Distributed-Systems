@@ -126,7 +126,7 @@ public class MultualExclusion {
 	}
 
 	private void getCriticalSection() throws IOException {
-		System.out.println("You got the critical section");
+		System.out.println("You got the critical section, input any word to leave ");
 		//need further implementation
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		br.readLine();
@@ -142,7 +142,7 @@ public class MultualExclusion {
 				synchronized(checkAvailable){
 					if(checkAvailable.containsKey(name)) {
 						checkAvailable.put(name, true);
-						System.out.println("the name of checkavailable updated : " + name);
+						//System.out.println("the name of checkavailable updated : " + name);
 						ischeck = true;
 						checkAvailable.notifyAll();
 					}
