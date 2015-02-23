@@ -14,6 +14,10 @@ public class Message implements Serializable{
 	private boolean isSendtoLogger;
 	boolean isMulti = false;
 	
+	private boolean isRequest;
+	private boolean isACK;
+	private boolean isRelease;
+	
 	
 	public Message(String dest, String kind, Object data, boolean isSendtoLogger) {
 		this.dest = dest;
@@ -21,7 +25,34 @@ public class Message implements Serializable{
 		this.data = data;
 		this.dupe = false;
 		this.isSendtoLogger = isSendtoLogger;
+		this.isRequest = false;
+		this.isACK = false;
+		this.isRelease = false;
 
+	}
+	
+	public boolean getRequest() {
+		return this.isRequest;
+	}
+	
+	public boolean getACK() {
+		return this.isACK;
+	}
+	
+	public boolean getRelease() {
+		return this.isRelease;
+	}
+	
+	public void setRequest() {
+		this.isRequest = true;
+	}
+	
+	public void setACK() {
+		this.isACK = true;
+	}
+	
+	public void setRelease() {
+		this.isRelease = true;
 	}
 	
 	public void setMulti(){

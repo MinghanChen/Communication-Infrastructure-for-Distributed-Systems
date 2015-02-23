@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.Queue;
 import java.util.Stack;
@@ -14,6 +15,7 @@ import yamlparser.YamlParser;
 public class Monitor implements Runnable {
 	Socket socket;
 	ObjectInputStream receive;
+	MessagePasser mp;
 	Queue<TimeStampedMessage> receivequeue;
 	Queue<GroupStampedMessage> deliverqueue;
 	//BufferedWriter bw;
@@ -21,9 +23,9 @@ public class Monitor implements Runnable {
 
 	Hashtable<String, ObjectOutputStream> outputstreamTable;
 	Queue<TimeStampedMessage> recdelay;
-	Queue<GroupStampedMessage> groupdelay;
+	Queue<GroupStampedMessage> groupdelay;	
 	
-	public Monitor(Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay, Queue<GroupStampedMessage> groupdelay,
+	public Monitor(MessagePasser mp, Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay, Queue<GroupStampedMessage> groupdelay,
 			Hashtable<String, ObjectOutputStream> outputstreamTable, ObjectOutputStream sendout) {
 		this.socket = socket;
 		this.receivequeue = receivequeue;
@@ -33,6 +35,7 @@ public class Monitor implements Runnable {
 		this.groupdelay = groupdelay;
 		this.deliverqueue = deliverqueue;
 		this.outputstreamTable = outputstreamTable;
+		this.mp = mp;
 		try {
 			receive = new 
 		            ObjectInputStream(socket.getInputStream());
@@ -53,10 +56,22 @@ public class Monitor implements Runnable {
 				try {
 					content = (TimeStampedMessage) receive.readObject();
 					//System.out.println("in true loop");
-					if(!content.getMulti())
+					if(!content.getMulti()) {
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
-					else{
-						deliverMsg(deliverqueue, groupdelay, content, recRuleTable);
+					} else{
+						if (content.getRequest()) {
+							synchronized (mp) {
+								mp.handleRequest(content);
+							}
+						} else if (content.getACK()) {
+							mp.handleACK();
+						} else if (content.getRelease()) {
+							synchronized (mp) {
+								mp.handleRelease();
+							}
+						} else {
+							deliverMsg(deliverqueue, groupdelay, content, recRuleTable);
+						}
 					}
 				} catch (ClassNotFoundException e) {
 					System.out.println("Cannot transfer to Message type");

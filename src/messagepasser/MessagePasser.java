@@ -38,6 +38,11 @@ public class MessagePasser {
 	private String configuration_filename;
 	private String[] loggerinfo;
 	
+	private Queue<GroupStampedMessage> requestqueue;
+	private boolean isVoted;
+	private int ACKnum;
+	
+	
 	public MessagePasser(){
 		
 	}
@@ -58,6 +63,10 @@ public class MessagePasser {
 		
 		this.loggerinfo = yamlparser.getLoggerInfo();
 		this.isLogical = isLogical;
+		
+		this.isVoted = false;
+		this.ACKnum = 0;
+		requestqueue = new LinkedList<GroupStampedMessage>();
 		if(!(isLogical == 0))
 			clock = new LogicalClock();
 		else{
@@ -95,7 +104,7 @@ public class MessagePasser {
 			}
 		}
 		ServerSocket ss = new ServerSocket(Integer.parseInt(port));
-		new Thread(new Listener( receivequeue, deliverqueue, ss, outputstreamTable, recRuleTable, recdelay, groupdelay)).start();
+		new Thread(new Listener(this, receivequeue, deliverqueue, ss, outputstreamTable, recRuleTable, recdelay, groupdelay)).start();
 		
 	}
 	
@@ -157,7 +166,7 @@ public class MessagePasser {
 				TimeStampedMessage delayMes = senddelay.poll();
 				sendout.writeObject(delayMes);
 			}
-			new Thread(new SrcMonitor(receivequeue, deliverqueue, socket, recRuleTable, recdelay,groupdelay)).start();
+			new Thread(new SrcMonitor(this, receivequeue, deliverqueue, socket, recRuleTable, recdelay,groupdelay)).start();
 			System.out.println("a new srcmonitor");
 			outputstreamTable.put(destination, sendout);
 			
@@ -297,15 +306,57 @@ public class MessagePasser {
 				TimeStampedMessage delayMes = senddelay.poll();
 				sendout.writeObject(delayMes);
 			}
-			new Thread(new SrcMonitor(receivequeue, deliverqueue, socket, recRuleTable, recdelay,groupdelay)).start();
+			new Thread(new SrcMonitor(this, receivequeue, deliverqueue, socket, recRuleTable, recdelay,groupdelay)).start();
 			outputstreamTable.put(destination, sendout);
 			
 		}
 		if (message.get_isSendtoLogger()) {
 			this.sendToLogger(message);
+		}	
+		
+	}
+	
+	protected void handleACK() {
+		this.ACKnum++;
+	}
+	
+	public int getACKnum() {
+		return this.ACKnum++;
+	}
+	
+	protected void handleRelease() {
+		isVoted = false;
+		if (!requestqueue.isEmpty()) {
+			this.handleRequest(requestqueue.poll());
+		}
+	}
+	
+	protected void handleRequest(TimeStampedMessage content) {
+		GroupStampedMessage groupmess = (GroupStampedMessage)content;
+		String dest = groupmess.getSource();
+		String kind = groupmess.getKind();
+		Message message = new Message(dest, kind, "ACK", false);
+		message.setACK();
+		synchronized (this.requestqueue) {
+			if (isVoted == false) {
+				isVoted = true;
+				try {
+					this.send(message);
+				} catch (NumberFormatException e) {
+					System.err.println("NumberFormatException");
+				} catch (UnknownHostException e) {
+					System.err.println("UnknownHostException");
+				} catch (IOException e) {
+					System.err.println("IOException");
+				}
+			} else {
+				requestqueue.add(groupmess);
+			}
+			
 		}
 		
 	}
+	
 }
 
 

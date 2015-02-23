@@ -21,11 +21,15 @@ public class Listener implements Runnable {
 	//String n;
 	Queue<TimeStampedMessage> receivequeue;
 	Queue<GroupStampedMessage> deliverqueue;
-	//MessagePasser mp;
+	MessagePasser mp;
 	
 	HashSet<Monitor> hashset = new HashSet<Monitor>();
+	
+	private Queue<GroupStampedMessage> requestqueue;
+	private boolean isVoted;
+	private int ACKnum;
 
-	public Listener(Queue<TimeStampedMessage> queue, Queue<GroupStampedMessage> deliverqueue,
+	public Listener(MessagePasser mp, Queue<TimeStampedMessage> queue, Queue<GroupStampedMessage> deliverqueue,
 					ServerSocket ss, Hashtable<String, ObjectOutputStream> outputstreamTable, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay, Queue<GroupStampedMessage> groupdelay) { // put hashtable inside
 		this.ss = ss;
 		//this.socketTable = socketTable;
@@ -36,7 +40,7 @@ public class Listener implements Runnable {
 		System.out.println("A new Listener");
 		this.recRuleTable = recRuleTable;
 		this.recdelay = recdelay;
-		//this.mp = mp;
+		this.mp = mp;
 	}
 	
 	public void removeSocket() throws IOException {
@@ -51,7 +55,7 @@ public class Listener implements Runnable {
 			            ObjectOutputStream(socket.getOutputStream());
 //				socketTable.put(name, socket);
 //				outputstreamTable.put(name, sendout);
-				new Thread(new Monitor(receivequeue, deliverqueue, socket, recRuleTable, recdelay, groupdelay, outputstreamTable, sendout)).start();
+				new Thread(new Monitor(mp, receivequeue, deliverqueue, socket, recRuleTable, recdelay, groupdelay, outputstreamTable, sendout)).start();
 				//System.out.println("a new Monitor");
 			}
 		} catch (IOException e) {

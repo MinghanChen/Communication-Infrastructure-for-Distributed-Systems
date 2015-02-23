@@ -19,14 +19,17 @@ public  class SrcMonitor implements Runnable {
 	Queue<TimeStampedMessage> recdelay;
 	Queue<GroupStampedMessage> groupdelay;
 	
+	MessagePasser mp;
 	
-	public SrcMonitor(Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay,  Queue<GroupStampedMessage> groupdelay) {
+	
+	public SrcMonitor(MessagePasser mp, Queue<TimeStampedMessage> receivequeue, Queue<GroupStampedMessage> deliverqueue, Socket socket, Hashtable<String, String> recRuleTable, Queue<TimeStampedMessage> recdelay,  Queue<GroupStampedMessage> groupdelay) {
 		this.socket = socket;
 		this.receivequeue = receivequeue;
 		this.recRuleTable = recRuleTable;
 		this.recdelay = recdelay;
 		this.deliverqueue = deliverqueue;
 		this.groupdelay = groupdelay;
+		this.mp = mp;
 		
 		try {
 			//din = new DataInputStream(socket.getInputStream());
@@ -48,12 +51,18 @@ public  class SrcMonitor implements Runnable {
 			while (true) {
 				try {
 					content = (TimeStampedMessage)receive.readObject();
-					if(content.getMulti())
+					if(!content.getMulti()) {
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
-					else{
-						//synchronized(deliverqueue){
-						deliverMsg(deliverqueue, groupdelay, content, recRuleTable);
-
+					} else{
+						if (content.getRequest()) {
+							mp.handleRequest(content);
+						} else if (content.getACK()) {
+							mp.handleACK();
+						} else if (content.getRelease()) {
+							mp.handleRelease();
+						} else {
+							deliverMsg(deliverqueue, groupdelay, content, recRuleTable);
+						}
 					}
 				} catch (ClassNotFoundException e) {
 					System.out.println("Cannot transfer to Message type");
