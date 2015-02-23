@@ -42,6 +42,8 @@ public class MessagePasser {
 	private boolean isVoted;
 	private int ACKnum;
 	
+	private Stack<String> ackstack;
+	
 	
 	public MessagePasser(){
 		
@@ -67,6 +69,8 @@ public class MessagePasser {
 		this.isVoted = false;
 		this.ACKnum = 0;
 		requestqueue = new LinkedList<GroupStampedMessage>();
+		ackstack = new Stack<String>();
+		
 		if(!(isLogical == 0))
 			clock = new LogicalClock();
 		else{
@@ -316,12 +320,28 @@ public class MessagePasser {
 		
 	}
 	
-	protected void handleACK() {
-		this.ACKnum++;
+	public String getACK() {
+		synchronized (ackstack) {
+			while (ackstack.isEmpty()) {
+				try {
+					ackstack.wait();
+				} catch (InterruptedException e) {
+					System.err.println("error in getACK()");
+				}
+			}
+			//System.out.println("in getACK()");
+			return ackstack.pop();
+		}
+		
 	}
 	
-	public int getACKnum() {
-		return this.ACKnum++;
+	protected void addACK(GroupStampedMessage gmessage) {
+		String source = gmessage.getSource();
+		synchronized (ackstack) {
+			ackstack.push(source);
+			ackstack.notifyAll();
+			//System.out.println("in addACK()");
+		}
 	}
 	
 	protected void handleRelease() {
@@ -334,14 +354,18 @@ public class MessagePasser {
 	protected void handleRequest(TimeStampedMessage content) {
 		GroupStampedMessage groupmess = (GroupStampedMessage)content;
 		String dest = groupmess.getSource();
-		String kind = groupmess.getKind();
-		Message message = new Message(dest, kind, "ACK", false);
-		message.setACK();
+		//System.out.println(dest);
+		groupmess.set_dest(dest);
+		groupmess.set_source(this.name);
+		groupmess.setACK();
+		groupmess.setMulti();
+		groupmess.setRequestFalse();    //   这里A给自己多发了一条信息
 		synchronized (this.requestqueue) {
 			if (isVoted == false) {
 				isVoted = true;
 				try {
-					this.send(message);
+					this.sendMul(groupmess);
+
 				} catch (NumberFormatException e) {
 					System.err.println("NumberFormatException");
 				} catch (UnknownHostException e) {

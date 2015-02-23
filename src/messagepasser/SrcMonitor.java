@@ -51,15 +51,20 @@ public  class SrcMonitor implements Runnable {
 			while (true) {
 				try {
 					content = (TimeStampedMessage)receive.readObject();
+
 					if(!content.getMulti()) {
 						offerMsg(receivequeue, recdelay, content, recRuleTable);
 					} else{
 						if (content.getRequest()) {
 							mp.handleRequest(content);
+							//System.out.println("after mp.handleRequest, srcMonitor");
 						} else if (content.getACK()) {
-							mp.handleACK();
+							//System.out.println("before addack");
+							mp.addACK((GroupStampedMessage)content);
+							System.out.println("after addack");
 						} else if (content.getRelease()) {
 							mp.handleRelease();
+							System.out.println("after handleRelease");
 						} else {
 							deliverMsg(deliverqueue, groupdelay, content, recRuleTable);
 						}

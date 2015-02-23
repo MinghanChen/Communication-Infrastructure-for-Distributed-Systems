@@ -30,6 +30,10 @@ public class RMulticast {
 		new Thread(new MultiRecMonitor(this)).start();
 
 	}
+	
+	public RMulticast(MessagePasser mp) {
+		this.mp = mp;
+	}
 
 	public void setGroupName(String groupname) {
 		this.groupName = groupname;
@@ -45,7 +49,8 @@ public class RMulticast {
 
 		List<String> members = thegroup.getNames();
 		if (groupstampmess.getSource().equals(this.mp.getName())) {
-			this.mp.increase();
+			if(!(groupstampmess.getRequest() || groupstampmess.getRelease()))
+				this.mp.increase();
 			//System.out.println(this.mp.getNum());
 			groupstampmess.set_seqNum(this.mp.getNum());
 			groupstampmess.setTimeStamp(this.mp.getVec().getTimeStamp());

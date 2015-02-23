@@ -7,13 +7,13 @@
 # The local node’s name is included in this list
 configuration :
 - name : Alice
-  ip   : 10.0.22.236
+  ip   : 192.168.0.12
   port : 12344
 - name : Bob
-  ip   : 10.0.22.236
+  ip   : 192.168.0.12
   port : 14255
 - name : Charlie
-  ip   : 10.0.22.236
+  ip   : 10.0.19.96
   port : 12998
 - name : Dephnie
   ip   : 10.0.22.236
@@ -60,4 +60,17 @@ groups : # A single, top-level section in the YAML file
   members :
   - Dephnie
   - Bob
+  - Charlie
+megroups : # A single, top-level section in the YAML file
+- name : Alice # Group names must be unique
+  members : # Any number of members in the group
+  - Bob
+  - Alice
+- name : Bob # As many groups as you鈥檇 like
+  members :
+  - Bob
+  - Charlie
+- name : Charlie # As many groups as you鈥檇 like
+  members :
+  - Alice
   - Charlie

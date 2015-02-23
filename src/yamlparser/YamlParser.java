@@ -18,7 +18,11 @@ public class YamlParser {
 	private Hashtable<String, String> recRuleTable = new Hashtable<String, String>();
 	private List<String> namelist = new ArrayList<String>();
 	private String[] loggerinfo = new String[2];
-	List<Group> groups = new ArrayList<Group>();
+	private List<Group> groups = new ArrayList<Group>();
+	
+	//private List<String> megroups = new ArrayList<String>();
+	private Hashtable<String, ArrayList<String>> mutualmap = new Hashtable<String, ArrayList<String>>();
+	
 
 	public void yamiParser(String file) throws IOException {
 		Yaml yaml = new Yaml();
@@ -113,6 +117,15 @@ public class YamlParser {
 			groups.add(g);
 		}
 		
+		Object obj6 = content.get("megroups");
+		ArrayList<Object> megroupinfo = new ArrayList<Object>((ArrayList)obj6);
+		for (Object object : megroupinfo) {
+			Map<String, Object> group = (Map<String, Object>)object;
+			//System.out.println("the size of it : " + log.size());
+			String groupname = group.get("name").toString();
+			ArrayList<String> members = (ArrayList<String>) group.get("members");
+			mutualmap.put(groupname, members);
+		}
 		//System.out.println(recRuleTable.size());
 	}
 	
@@ -140,4 +153,7 @@ public class YamlParser {
 		return loggerinfo;
 	}
 
+	public Hashtable<String, ArrayList<String>> getMutualmap() {
+		return mutualmap;
+	}
 }

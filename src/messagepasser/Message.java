@@ -47,6 +47,10 @@ public class Message implements Serializable{
 		this.isRequest = true;
 	}
 	
+	public void setRequestFalse() {
+		this.isRequest = false;
+	}
+	
 	public void setACK() {
 		this.isACK = true;
 	}
