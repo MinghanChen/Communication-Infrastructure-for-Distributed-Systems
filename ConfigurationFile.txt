@@ -7,17 +7,26 @@
 # The local node’s name is included in this list
 configuration :
 - name : Alice
-  ip   : 10.0.22.236
+  ip   : 10.0.19.96
   port : 12344
 - name : Bob
-  ip   : 10.0.22.236
+  ip   : 10.0.19.96
   port : 14255
 - name : Charlie
-  ip   : 10.0.22.236
+  ip   : 10.0.19.96
   port : 12998
 - name : Dephnie
-  ip   : 10.0.22.236
+  ip   : 10.0.19.96
   port : 19872
+- name : Ella
+  ip   : 10.0.19.96
+  port : 19873
+- name : Fuck
+  ip   : 10.0.19.96
+  port : 19874
+- name : Grill
+  ip   : 10.0.19.96
+  port : 19875
 # This is the incoming port on which MP will listen
 # May be changed for further communication as usual
 sendRules :
@@ -25,12 +34,12 @@ sendRules :
     src    : Alice
     dest   : Bob
     kind   : ACK
-    seqNum : 2
+    seqNum : 97
   - action : delay # Ack message number 4 from bob to alice will not be sent
-    src    : Alice
-    dest   : Charlie
+    src    : Bob
+    dest   : Alice
     kind   : ACK
-    seqNum : 2
+    seqNum : 4
   - action : drop # Every Lookup message in the system will be delayed
     src    : Alice
     dest   : Bob
@@ -66,11 +75,34 @@ megroups : # A single, top-level section in the YAML file
   members : # Any number of members in the group
   - Bob
   - Alice
+  - Charlie
 - name : Bob # As many groups as you鈥檇 like
   members :
   - Bob
-  - Charlie
+  - Dephnie
+  - Fuck
 - name : Charlie # As many groups as you鈥檇 like
   members :
-  - Alice
+  - Ella
   - Charlie
+  - Fuck
+- name : Dephnie # As many groups as you鈥檇 like
+  members :
+  - Alice
+  - Dephnie
+  - Ella
+- name : Ella # As many groups as you鈥檇 like
+  members :
+  - Bob
+  - Grill
+  - Ella
+- name : Fuck # As many groups as you鈥檇 like
+  members :
+  - Alice
+  - Fuck
+  - Grill
+- name : Grill # As many groups as you鈥檇 like
+  members :
+  - Charlie
+  - Dephnie
+  - Grill

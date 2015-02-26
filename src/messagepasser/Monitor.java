@@ -60,11 +60,10 @@ public class Monitor implements Runnable {
 					} else{
 						if (content.getRequest()) {
 							synchronized (mp) {
-								//System.out.println("request received : " + content.toString());
 								mp.handleRequest(content);
 							}
 						} else if (content.getACK()) {
-							//System.out.println("before mp.addACK(content), monitor");
+							//System.out.println("content source :" +content.getSource() + " content.des" + content.getDest());
 							mp.addACK((GroupStampedMessage)content);
 							//System.out.println("after mp.addACK(content), monitor");
 						} else if (content.getRelease()) {

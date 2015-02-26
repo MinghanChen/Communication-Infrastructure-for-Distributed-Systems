@@ -87,6 +87,10 @@ public class Message implements Serializable{
 		this.isSendtoLogger = isSendtoLogger;
 	}
 	
+	public void setKind(String kind) {
+		this.kind = kind;
+	}
+	
 	public String getDest() {
 		return dest;
 	}
@@ -117,7 +121,7 @@ public class Message implements Serializable{
 	
 	@Override
 	public String toString() {
-		return ("The destination : " + dest + "  The source : " + source +
+		return ("The destination : " + dest + "  The source : " + source + "The kind : " + kind +
 							"  The sequence number : " + sequenceNumber + "  The content is : " + data.toString());
 	}
 	

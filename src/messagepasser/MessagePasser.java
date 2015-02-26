@@ -39,11 +39,10 @@ public class MessagePasser {
 	private String[] loggerinfo;
 	
 	private Queue<GroupStampedMessage> requestqueue;
-	private boolean isVoted;
+	protected boolean isVoted;
 	private int ACKnum;
 	
 	private Stack<String> ackstack;
-	
 	
 	public MessagePasser(){
 		
@@ -222,6 +221,7 @@ public class MessagePasser {
 				return false;
 			}
 			else if(RuleTable.get(key).equals("delay")){
+				//System.out.println("put in delayqueue");
 				this.senddelay.offer(message);
 				return true;
 			}
@@ -287,7 +287,10 @@ public class MessagePasser {
 		sendRuleTable = yamlparser.getSendRuleTable();
 		
 		message.setMulti();
-		//message.set_source(this.name);
+		if (message.getACK()) {
+			seqNumber++;
+		}
+		//System.out.println("source + dest"+message.getSource() +" "+ message.getDest());
 		
 		String destination = message.getDest();
 		String key = name + destination + message.getKind() + message.getNum();
@@ -297,7 +300,9 @@ public class MessagePasser {
 			//sendout in checkRules();
 			while(!senddelay.isEmpty() && !isDelay){
 				TimeStampedMessage delayMes = senddelay.poll();
-				sendout.writeObject(delayMes);
+				delayMes.setKind("any");
+				//System.out.println("delaymes : source " + delayMes.getSource() + " delaymes des : " + delayMes.getDest());
+				this.sendMul((GroupStampedMessage)delayMes);
 			}
 		} else {
 			String[] info = portTableInfo.get(destination).split("\t");
@@ -308,7 +313,9 @@ public class MessagePasser {
 			boolean isDelay = this.checkRules(sendRuleTable,sendout, message, key);
 			while(!senddelay.isEmpty() && !isDelay){
 				TimeStampedMessage delayMes = senddelay.poll();
-				sendout.writeObject(delayMes);
+				delayMes.setKind("any");
+				//System.out.println("delaymes : source " + delayMes.getSource() + " delaymes des : " + delayMes.getDest());
+				this.sendMul((GroupStampedMessage)delayMes);
 			}
 			new Thread(new SrcMonitor(this, receivequeue, deliverqueue, socket, recRuleTable, recdelay,groupdelay)).start();
 			outputstreamTable.put(destination, sendout);
@@ -317,7 +324,6 @@ public class MessagePasser {
 		if (message.get_isSendtoLogger()) {
 			this.sendToLogger(message);
 		}	
-		
 	}
 	
 	public String getACK() {
@@ -329,7 +335,6 @@ public class MessagePasser {
 					System.err.println("error in getACK()");
 				}
 			}
-			//System.out.println("in getACK()");
 			return ackstack.pop();
 		}
 		
@@ -340,7 +345,6 @@ public class MessagePasser {
 		synchronized (ackstack) {
 			ackstack.push(source);
 			ackstack.notifyAll();
-			//System.out.println("in addACK()" + source);
 		}
 	}
 	
@@ -359,13 +363,16 @@ public class MessagePasser {
 		synchronized (this.requestqueue) {
 			if (isVoted == false) {
 				isVoted = true;
+				
 				String dest = groupmess.getSource();
 				groupmess.set_dest(dest);
 				groupmess.set_source(this.name);
 				groupmess.setACK();
+				groupmess.setKind("ACK");
 				groupmess.setMulti();
 				groupmess.setRequestFalse();    //   这里A给自己多发了一条信息
 				try {
+					//System.out.println("before sendMul");
 					this.sendMul(groupmess);
 
 				} catch (NumberFormatException e) {
@@ -376,6 +383,7 @@ public class MessagePasser {
 					System.err.println("IOException");
 				}
 			} else {
+				//System.out.println("enter the else");
 				requestqueue.add(groupmess);
 			}
 			

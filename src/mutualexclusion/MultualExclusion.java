@@ -75,6 +75,7 @@ public class MultualExclusion {
 		GroupStampedMessage gmsgreq = new GroupStampedMessage("", "", "", false, 0, null);
 		gmsgreq.set_source(this.mp.getName());
 		gmsgreq.setRequest();
+		//System.out.println("is Multicasting request");
 		this.rMul.multicastMsg(gmsgreq, thegroup);
 		System.out.println("Waiting for critical section");
 		while(!status){
@@ -108,7 +109,9 @@ public class MultualExclusion {
 			Set<String> keyset = checkAvailable.keySet();
 			Iterator<String> iter = keyset.iterator();
 			while (iter.hasNext()) {
-			   Boolean val = checkAvailable.get(iter.next());
+			   String content = iter.next();
+			   Boolean val = checkAvailable.get(content);
+			   //System.out.println("the check availability " + content + " " + val);
 			   if(!val) {
 				   flag = false;
 				   break;
